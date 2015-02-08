@@ -2,6 +2,7 @@ package hudson.plugins.jira;
 
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
 import hudson.matrix.MatrixBuild;
@@ -31,12 +32,15 @@ import java.io.PrintStream;
  * @author Victor Martinez
  */
 public class JiraIssueKingUpdater extends Recorder implements MatrixAggregatable {
-	
+
     private String assignee;
-    
+    private final String comment;
+
     @DataBoundConstructor
-    public JiraIssueKingUpdater(String assignee) {
+    public JiraIssueKingUpdater(String assignee, String comment) {
         this.assignee = assignee;
+        this.comment = Util.fixEmptyAndTrim(comment);
+
     }
 
     public String getAssignee() {
@@ -47,6 +51,12 @@ public class JiraIssueKingUpdater extends Recorder implements MatrixAggregatable
         this.assignee = assignee;
     }
 
+    /**
+     * @return the comment
+     */
+    public String getComment() {
+        return comment;
+    }
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -54,9 +64,14 @@ public class JiraIssueKingUpdater extends Recorder implements MatrixAggregatable
         if (build instanceof MatrixRun) {
             return true;
         }
-        // TODO:
-        // https://developer.atlassian.com/jiradev/api-reference/jira-rest-apis/jira-rest-api-tutorials/jira-rest-api-example-edit-issues#JIRARESTAPIExample-Editissues-Exampleofassigninganissuetouser"harry"
-        return Updater.perform(build, listener);
+        if (this.assignee != null && ! this.assignee.equals("")) {
+          // TODO:
+          // https://developer.atlassian.com/jiradev/api-reference/jira-rest-apis/jira-rest-api-tutorials/jira-rest-api-example-edit-issues#JIRARESTAPIExample-Editissues-Exampleofassigninganissuetouser"harry"
+          String realComment = Util.fixEmptyAndTrim(build.getEnvironment(listener).expand(comment));
+          return false;
+        } else {
+          return Updater.perform(build, listener);
+        }
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
