@@ -67,8 +67,8 @@ public class JiraIssueKingUpdater extends Recorder implements MatrixAggregatable
         if (this.assignee != null && ! this.assignee.equals("")) {
           // TODO:
           // https://developer.atlassian.com/jiradev/api-reference/jira-rest-apis/jira-rest-api-tutorials/jira-rest-api-example-edit-issues#JIRARESTAPIExample-Editissues-Exampleofassigninganissuetouser"harry"
-          String realComment = Util.fixEmptyAndTrim(build.getEnvironment(listener).expand(comment));
-          return false;
+          String realComment = Util.fixEmptyAndTrim(build.getEnvironment(listener).expand(this.comment));
+          return Updater.perform(build, listener, this.assignee, realComment);
         } else {
           return Updater.perform(build, listener);
         }
