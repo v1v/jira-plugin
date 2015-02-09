@@ -6,7 +6,7 @@
     <artifactId>plugin</artifactId>
     <version>1.532</version>
   </parent>
-  
+
   <artifactId>jira</artifactId>
   <version>1.40-SNAPSHOT</version>
   <packaging>hpi</packaging>
@@ -16,14 +16,19 @@
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jira.version>5.0</jira.version>
+    <jira.data.version>${jira.version}</jira.data.version>
+    <jira.test-lib.version>${jira.version}</jira.test-lib.version>
+    <jdkLevel>1.6</jdkLevel>
+    <jersey.client.version>1.5</jersey.client.version>
   </properties>
-  
+
   <scm>
    <connection>scm:git:git://github.com/jenkinsci/jira-plugin.git</connection>
    <developerConnection>scm:git:git@github.com:jenkinsci/jira-plugin.git</developerConnection>
    <url>https://github.com/jenkinsci/jira-plugin</url>
     <tag>HEAD</tag>
-  </scm>  
+  </scm>
 
   <developers>
     <developer>
@@ -42,7 +47,7 @@
           <configuration>
             <source>1.5</source>
             <target>1.5</target>
-          </configuration>          
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -53,7 +58,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>2.5</version>
-        </plugin>               
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
@@ -109,7 +114,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin> 
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -117,7 +122,7 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
-        </configuration>          
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -174,8 +179,14 @@
       <version>1.9.5</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>net.rcarz</groupId>
+      <artifactId>jira-client</artifactId>
+      <version>0.5</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
-  
+
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
@@ -200,6 +211,6 @@
         <enabled>false</enabled>
       </snapshots>
     </pluginRepository>
-  </pluginRepositories>  
-  
+  </pluginRepositories>
+
 </project>
