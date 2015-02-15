@@ -17,6 +17,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import hudson.plugins.jira.api.JiraRestApi;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -68,7 +69,7 @@ public class JiraIssueKingUpdater extends Recorder implements MatrixAggregatable
           // TODO:
           // https://developer.atlassian.com/jiradev/api-reference/jira-rest-apis/jira-rest-api-tutorials/jira-rest-api-example-edit-issues#JIRARESTAPIExample-Editissues-Exampleofassigninganissuetouser"harry"
           String realComment = Util.fixEmptyAndTrim(build.getEnvironment(listener).expand(this.comment));
-          return Updater.perform(build, listener, this.assignee, realComment);
+          return JiraRestApi.perform(build, listener, this.assignee, realComment);
         } else {
           return Updater.perform(build, listener);
         }
