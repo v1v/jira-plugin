@@ -97,18 +97,6 @@ public class JiraSession {
     }
 
     /**
-     * Set the assigned user.
-     *
-     * @param id Issue ID like "MNG-1235".
-     * @param assigned user.
-     * @return null if no such issue exists.
-     */
-    public RemoteIssue setAssigned(String issueId, String assigne) throws RemoteException {
-        // TODO: needs to be implemented
-        return null;
-    }
-
-    /**
      * Gets the details of one issue.
      *
      * @param id Issue ID like "MNG-1235".
