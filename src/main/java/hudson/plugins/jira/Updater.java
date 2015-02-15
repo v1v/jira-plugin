@@ -14,7 +14,6 @@ import hudson.plugins.jira.soap.RemotePermissionException;
 import hudson.scm.ChangeLogSet.AffectedFile;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.RepositoryBrowser;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
@@ -27,13 +26,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.xml.rpc.ServiceException;
-
-import net.rcarz.jiraclient.BasicCredentials;
-import net.rcarz.jiraclient.Issue;
-import net.rcarz.jiraclient.JiraClient;
-
 import org.apache.commons.lang.StringUtils;
 
 import static java.lang.String.format;
@@ -113,73 +106,6 @@ class Updater {
         return true;
     }
 
-    static boolean perform(AbstractBuild<?, ?> build, BuildListener listener, String assignee, String comment) {
-        PrintStream logger = listener.getLogger();
-        List<JiraIssue> issues = null;
-
-        try {
-            JiraSite site = JiraSite.get(build.getProject());
-            if (site == null) {
-                logger.println(Messages.Updater_NoJiraSite());
-                build.setResult(Result.FAILURE);
-                return true;
-            }
-
-            String rootUrl = Hudson.getInstance().getRootUrl();
-            if (rootUrl == null) {
-                logger.println(Messages.Updater_NoJenkinsUrl());
-                build.setResult(Result.FAILURE);
-                return true;
-            }
-
-            Set<String> ids = findIssueIdsRecursive(build, site.getIssuePattern(), listener);
-
-            if (ids.isEmpty()) {
-                if (debug)
-                    logger.println("No JIRA issues found.");
-                return true;    // nothing found here.
-            }
-
-            JiraSession session = null;
-            try {
-                session = site.createSession();
-            } catch (ServiceException e) {
-                listener.getLogger().println(Messages.Updater_FailedToConnect());
-                e.printStackTrace(listener.getLogger());
-            }
-            if (session == null) {
-                logger.println(Messages.Updater_NoRemoteAccess());
-                build.setResult(Result.FAILURE);
-                return true;
-            }
-
-            boolean doUpdate = false;
-            if (site.updateJiraIssueForAllStatus) {
-                doUpdate = true;
-            } else {
-                doUpdate = build.getResult().isBetterOrEqualTo(Result.UNSTABLE);
-            }
-            boolean useWikiStyleComments = site.supportsWikiStyleComment;
-
-            issues = getJiraIssues(ids, session, logger);
-            build.getActions().add(new JiraBuildAction(build, issues));
-
-            if (doUpdate) {
-                submitAssigneeField(build, logger, rootUrl, site, issues, assignee);
-            } else {
-                // this build didn't work, so carry forward the issues to the next build
-                build.addAction(new JiraCarryOverAction(issues));
-            }
-        } catch (Exception e) {
-            logger.println("Error updating JIRA issues. Saving issues for next build.\n" + e);
-            if (issues != null && !issues.isEmpty()) {
-                // updating issues failed, so carry forward issues to the next build
-                build.addAction(new JiraCarryOverAction(issues));
-            }
-        }
-
-        return true;
-    }
 
     /**
      * Submits comments for the given issues.
@@ -209,48 +135,6 @@ class Updater {
                         createComment(build, useWikiStyleComments, jenkinsRootUrl, recordScmChanges, issue),
                         groupVisibility, roleVisibility);
             } catch (RemotePermissionException e) {
-                // Seems like RemotePermissionException can mean 'no permission' as well as
-                // 'issue doesn't exist'.
-                // To prevent carrying forward invalid issues forever, we have to drop them
-                // even if the cause of the exception was different.
-                logger.println("Looks like " + issue.id + " is no valid JIRA issue or you don't have permission to update the issue.\n" +
-                        "Issue will not be updated.\n" + e);
-                issues.remove(issue);
-            }
-        }
-    }
-    
-    /**
-     * Submits assignee field for the given issues.
-     * Removes from <code>issues</code> the ones which appear to be invalid.
-     *
-     * @param build
-     * @param logger
-     * @param jenkinsRootUrl
-     * @param issues
-     * @param assignee
-     * @throws RemoteException
-     */
-    static void submitAssigneeField(
-            AbstractBuild<?, ?> build, PrintStream logger, String jenkinsRootUrl, JiraSite site,
-            List<JiraIssue> issues, String assignee) throws RemoteException {
-        // copy to prevent ConcurrentModificationException
-        List<JiraIssue> copy = new ArrayList<JiraIssue>(issues);
-        for (JiraIssue issue : copy) {
-            try {
-                logger.println(Messages.Updater_Updating(issue.id));
-                // TODO: pending to call RestAPI
-                
-                BasicCredentials creds = new BasicCredentials(site.userName, site.password);
-                JiraClient jira = new JiraClient(jenkinsRootUrl, creds);
-
-                final Issue tempIssue = jira.getIssue(issue.id);
-                tempIssue.addComment("No problem. We'll get right on it!");
-
-                logger.println(tempIssue.toString());
-                
-                
-            } catch (Exception e) {
                 // Seems like RemotePermissionException can mean 'no permission' as well as
                 // 'issue doesn't exist'.
                 // To prevent carrying forward invalid issues forever, we have to drop them
