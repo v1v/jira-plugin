@@ -14,8 +14,8 @@ public class Example1 {
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void main(String[] args) {
 
-        BasicCredentials creds = new BasicCredentials("vmartinez", "7iC4mbridg3");
-        JiraClient jira = new JiraClient("http://192.168.59.103:18080", creds);
+        BasicCredentials creds = new BasicCredentials("vmartinez", "jira");
+        JiraClient jira = new JiraClient("http://192.168.59.103:8080", creds);
 
         try {
             /* Retrieve issue TEST-123 from JIRA. We'll get an exception if this fails. */
