@@ -105,6 +105,7 @@ public class JiraRestApi {
             build.getActions().add(new JiraBuildAction(build, issues));
 
             if (doUpdate) {
+                submitComments(build, logger, rootUrl, site, issues, useWikiStyleComments, site.recordScmChanges, comment);
                 submitAssigneeField(build, logger, rootUrl, site, issues, assignee);
             } else {
                 // this build didn't work, so carry forward the issues to the next build
@@ -136,30 +137,27 @@ public class JiraRestApi {
      * @throws RemoteException
      */
     static void submitComments(
-            AbstractBuild<?, ?> build, PrintStream logger, String jenkinsRootUrl,
-            List<JiraIssue> issues, JiraSession session,
-            boolean useWikiStyleComments, boolean recordScmChanges, String groupVisibility, String roleVisibility) throws RemoteException {
+            AbstractBuild<?, ?> build, PrintStream logger, String jenkinsRootUrl, JiraSite site,
+            List<JiraIssue> issues, boolean useWikiStyleComments, boolean recordScmChanges, String comment) throws RemoteException {
         // copy to prevent ConcurrentModificationException
         List<JiraIssue> copy = new ArrayList<JiraIssue>(issues);
         for (JiraIssue issue : copy) {
             try {
                 logger.println(Messages.Updater_Updating(issue.id));
-                session.addComment(
-                        issue.id,
-                        createComment(build, useWikiStyleComments, jenkinsRootUrl, recordScmChanges, issue),
-                        groupVisibility, roleVisibility);
-            } catch (RemotePermissionException e) {
-                // Seems like RemotePermissionException can mean 'no permission' as well as
-                // 'issue doesn't exist'.
+                BasicCredentials creds = new BasicCredentials(site.userName, site.password);
+                JiraClient jira = new JiraClient(site.url.toString(), creds);
+                final Issue tempIssue = jira.getIssue(issue.id);
+                tempIssue.addComment(createComment(build, useWikiStyleComments, jenkinsRootUrl, recordScmChanges, issue));
+            } catch (JiraException e) {
                 // To prevent carrying forward invalid issues forever, we have to drop them
                 // even if the cause of the exception was different.
                 logger.println("Looks like " + issue.id + " is no valid JIRA issue or you don't have permission to update the issue.\n" +
-                        "Issue will not be updated.\n" + e);
+                        "Issue will not be updated.\n" + e.getCause().toString());
                 issues.remove(issue);
             }
         }
     }
-    
+
     /**
      * Submits assignee field for the given issues.
      * Removes from <code>issues</code> the ones which appear to be invalid.
@@ -179,25 +177,15 @@ public class JiraRestApi {
         for (JiraIssue issue : copy) {
             try {
                 logger.println(Messages.Updater_Updating(issue.id));
-                // TODO: pending to call RestAPI      
+
                 BasicCredentials creds = new BasicCredentials(site.userName, site.password);
                 JiraClient jira = new JiraClient(site.url.toString(), creds);
-
                 final Issue tempIssue = jira.getIssue(issue.id);
-                logger.println ("It will update the below jira " + tempIssue.getUrl());
-                logger.println (" + assignee " + assignee);
-                
-                Issue.SearchResult sr = jira.searchIssues("assignee=" + assignee);
-                logger.println("--Total: " + sr.total);
-                for (Issue i : sr.issues)
-                	logger.println("--Result: " + i);
-                tempIssue.addComment("No problem. We'll get right on it!");
-
                 tempIssue.update().field(Field.ASSIGNEE, "vmartinez").execute();
             } catch (JiraException e) {
                 // To prevent carrying forward invalid issues forever, we have to drop them
                 // even if the cause of the exception was different.
-                logger.println("Looks like " + issue.id + " is no valid JIRA issue or you don't have permission to update the issue.\n" +
+                logger.println("Looks like " + issue.id + " is no valid JIRA issue or you don't have permission to assign users.\n" +
                         "Issue will not be updated.\n" + e.getCause().toString());
                 issues.remove(issue);
             }
