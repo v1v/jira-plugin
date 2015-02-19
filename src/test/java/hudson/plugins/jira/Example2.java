@@ -49,6 +49,7 @@ public class Example2 {
 				promises.add(issueClient.createIssue(newIssue));
 			}
             final Issue issue = restClient.getIssueClient().getIssue("TEST-1").claim();
+            issue.
             System.out.println(issue);
 
 		} finally {

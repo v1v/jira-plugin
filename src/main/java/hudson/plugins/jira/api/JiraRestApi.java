@@ -1,30 +1,25 @@
 package hudson.plugins.jira.api;
 
-import static java.lang.String.format;
 import hudson.Util;
-import hudson.model.BuildListener;
-import hudson.model.ParameterValue;
-import hudson.model.Result;
-import hudson.model.AbstractBuild;
+import hudson.model.*;
 import hudson.model.AbstractBuild.DependencyChange;
-import hudson.model.Hudson;
-import hudson.model.ParametersAction;
-import hudson.model.Run;
-import hudson.plugins.jira.JiraCarryOverAction;
-import hudson.plugins.jira.JiraIssue;
-import hudson.plugins.jira.JiraSession;
+import hudson.plugins.jira.*;
 import hudson.plugins.jira.Messages;
-import hudson.plugins.jira.JiraBuildAction;
-import hudson.plugins.jira.JiraSite;
 import hudson.plugins.jira.listissuesparameter.JiraIssueParameterValue;
-import hudson.plugins.jira.soap.RemotePermissionException;
-import hudson.scm.RepositoryBrowser;
 import hudson.scm.ChangeLogSet.AffectedFile;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.RepositoryBrowser;
+import net.rcarz.jiraclient.*;
+import org.apache.commons.lang.StringUtils;
 
+import javax.xml.rpc.ServiceException;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -35,16 +30,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.rpc.ServiceException;
-
-import net.rcarz.jiraclient.BasicCredentials;
-import net.rcarz.jiraclient.Field;
-import net.rcarz.jiraclient.Issue;
-import net.rcarz.jiraclient.JiraClient;
-import net.rcarz.jiraclient.JiraException;
-import net.rcarz.jiraclient.Project;
-
-import org.apache.commons.lang.StringUtils;
+import static java.lang.String.format;
 
 /**
  * JIRA RestAPI update logic.
@@ -387,4 +373,12 @@ public class JiraRestApi {
      * Debug flag.
      */
     public static boolean debug = false;
+
+
+
+    // http://localhost:8080/RESTfulExample/json/product/get
+    public static void setAssignee() {
+       // TODO: pending to do
+
+    }
 }

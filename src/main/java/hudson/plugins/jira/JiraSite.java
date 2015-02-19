@@ -182,7 +182,7 @@ public class JiraSite extends AbstractDescribableImpl<JiraSite> {
     }
 
     private static Cache<String, RemoteIssue> makeIssueCache() {
-        return CacheBuilder.newBuilder().concurrencyLevel(2).expireAfterAccess(2, TimeUnit.MINUTES).build();
+        return null;
     }
 
 
@@ -375,6 +375,7 @@ public class JiraSite extends AbstractDescribableImpl<JiraSite> {
     @CheckForNull
     public JiraIssue getIssue(final String id) throws IOException, ServiceException {
 
+        /**
         try {
             RemoteIssue remoteIssue = issueCache.get(id, new Callable<RemoteIssue>() {
                 public RemoteIssue call() throws Exception {
@@ -395,7 +396,8 @@ public class JiraSite extends AbstractDescribableImpl<JiraSite> {
             return new JiraIssue(remoteIssue);
         } catch (ExecutionException e) {
             throw new ServiceException(e);
-        }
+        }**/
+        return null;
     }
 
     /**
